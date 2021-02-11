@@ -18,5 +18,7 @@ fi
 
 grab=$(printf "US $%'.2f", $grab)
 
-(( $notify == 1 )) && /usr/bin/notify-send "BITCON PRICE" "$grab"
-
+if [ $notify == 1 ]; then
+/usr/bin/notify-send "BITCON PRICE" "$grab"
+echo "$stor" | ~/log -db_src "DBI:Pg:host=localhost;" -database lifelog -sys_table=BITCOIN:VALUE:INTEGER -system
+fi
