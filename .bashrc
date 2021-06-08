@@ -148,11 +148,10 @@ alias spavaj="systemctl suspend"
 alias vimenize="~/vimenize.sh"
 alias viz="~/vimenize.pl"
 alias backup="~/dev/B_L_R_via_sshfs/backup.sh"
-alias xspell="~/xspell.sh"
+alias xspell="~/xspell.pl"
 alias killpid="~/selKillPID.sh"
 alias uvar="~/uvar.sh"
 alias tm="~/tm.sh"
-alias xspaell="~/xspell.sh"
 
 powerline-daemon -q
 POWERLINE_BASH_CONTINUATION=1
@@ -201,4 +200,4 @@ cheat()   { clear && curl cheat.sh/"$1" ; }
 destroy() { shred "$1" && rm "$1"; }
 
 spellcheck(){ echo "$1 $2 $3 $4" | aspell -a | sed -n '1!p'; }
-bind -x 'C-l: clear;'
+bind -x '"\C-l": clear;'
