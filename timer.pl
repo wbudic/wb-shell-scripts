@@ -3,30 +3,47 @@ use strict;
 use warnings;
 use Term::ANSIColor qw(:constants);
 use Term::Screen;
-
-my $t = Term::Screen->new(); $t->noecho(); $t->at($t->rows()-2,0); 
-my $exited = 0;
-$SIG{'INT'} = sub {
-	print RESET "\nCTRL+C <- Terminated!\r\n";  
-	$t->echo(); 
-	$t->curvis(); 
-	$exited=1; 
-};
+use Term::Menus;
 
 my $cnt_down = 15*60; # in secs, default is 15 min.
 my $beg = time;
 my $end = $beg + $cnt_down;
 my ($msg, $time, $cur, $cmd); 
 
+ if(scalar @ARGV>0){
+   foreach my $arg(@ARGV){
+      if ($arg =~ /\d+/){
+            $end = $beg + $arg * 60; print "Minutes -> $arg\n";
+      }else{
+            $cmd = $arg; print "Command -> $cmd\n";
+      }
+   }
+   print "Activating...\n";
+ }else{
+    my @lst = (5,15,20,30,40,45,50,60);
+    my $sel=&pick(\@lst,"Which is your desired timeout in minutes (from 1..8)?");
+		if($sel ne "]quit["){
+         print "Setting timer to $sel minutes.\n"; 
+         sleep(1);
+         $beg = time;
+	      $end = $beg + $sel * 60;
+
+		}else{
+			 exit; 
+		}
+ }
+
+
+my $t = Term::Screen->new();
+my $exited = 0;
+$SIG{'INT'} = sub {
+	print RESET "\n[CTRL]+[C] <- Terminated!\r\n";  
+	$t->echo(); 
+	$t->curvis(); 
+	$exited=1; 
+};
 $| = 1;
- 
-foreach my $arg(@ARGV){
-  if ($arg =~ /\d+/){
-      $end = $beg + $arg * 60;
-  }else{
-      $cmd = $arg; print "cmd -> $cmd\n";
-  }
-}
+$t->noecho(); $t->at($t->rows()-2,0); 
 for (;;) {
    $time = time;
    last if ($time >= $end);
@@ -40,17 +57,17 @@ for (;;) {
    sleep(1);
    $t->flush_input();
    $t->clreol();
-   exit if $exited;
+   exit 0 if $exited;
 }
 $msg = "\rTimer has expired!\r\n";
 print RESET $msg;
-$t->echo(); $t->curvis();
+$t->echo(); $t->curvis(); undef $t;
 
 `/usr/bin/notify-send "TIMEOUT" "$msg"&`;
 if($cmd){
  system($cmd);
 }else{
-`mpv --no-video "$ENV{HOME}/Fiona Apple - Fast As You Can-NbxqtbqyoRk.mkv"`;
+ system('mpv --no-video "$ENV{HOME}/Fiona Apple - Fast As You Can-NbxqtbqyoRk.mkv"');
 }
 
 
