@@ -24,11 +24,11 @@ my ($msg, $time, $cur, $cmd);
             }
       }
    }
-   print "Activating...\n";
+   print "Activating timer($$)...\n";
  }else{
     my $lst = 'Cancel\n 3m\n 5m\n 10m\n 15m\n 20m\n 25m\n 30m\n 40m\n 45m\n 50m\n 60m\n 90m\n 1h\n 2h\n 3h\n 4h\n 3s\n 10s\n 30s';
     my $cmd = qq(
-       echo '$lst'|fzf --no-multi --cycle --height=12 --border --margin 1,1% --pointer='->' --color=dark --print-query
+       echo '$lst'|~/.fzf/bin/fzf --no-multi --cycle --height=12 --border --margin 1,1% --pointer='->' --color=dark --print-query
                           --info=inline --header='<- Please select your desired timeout. Check out your, ^ arrow, PgUp, PgDwn, and ESC key.'
     ); $cmd =~ s/[\n\r\t]//g; 
     my $sel=`$cmd`;$sel =~ s/\s//g; 
@@ -36,15 +36,16 @@ my ($msg, $time, $cur, $cmd);
          $sta = time;
          if($sel =~ m/m$/){
             $sel =~ s/m$//;
-            print "Setting timer to [$sel] minutes.\n";
+            print "Setting timer($$) to $sel minutes.\n";
             $end = $sta + $sel * 60;
          }
          elsif($sel =~ m/h$/){
-            print "Setting timer to $sel.\n";
+            print "Setting timer($$) to $sel in hours.\n";
             $sel =~ s/h$//;
             $sel *= 60;
             $end = $sta + $sel * 60;
          }elsif($sel =~ m/s$/){
+            print "Setting timer($$) to $sel in seconds.\n";
             $sel =~ s/s$//;
             $end = $sta + $sel;
 
@@ -84,11 +85,11 @@ for (;;) {
    $t->clreol();
    exit 0 if $exited;
 }
-$msg = "\rTimer has expired!\r\n";
+$msg = "\rTimer ($$) has expired!\r\n";
 print RESET $msg;
 $t->echo(); $t->curvis(); undef $t;
 
-`/usr/bin/notify-send "TIMEOUT" "$msg"&`;
+`/usr/bin/notify-send "TIMER ($$)" "$msg"&`;
 if($cmd){
  system($cmd);
 }else{
@@ -109,4 +110,6 @@ System bells are unacceptable.
 
 Requirements:
 sudo apt install mvp
-fzf (don't use apt to install, can be crap, install manually for vim and from your home)
+fzf (don't use apt to install, can be crap old version,
+    install manually for vim and from your home, and symbolik link)
+i.e. ln -s ~/.fzf/bin/fzf ~/.local/bin/fzf 
