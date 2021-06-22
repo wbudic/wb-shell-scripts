@@ -8,7 +8,7 @@ if (isatty(*STDIN)){
 }
 system ('vim - -c "w!.__tmp__vimpiped.txt" 2>&1');
 my $THD;
-open($THD, "<", "vimpiped.txt") or exit 0;
+open($THD, "<", ".__tmp__vimpiped.txt") or exit 0;
 while(<$THD>){print STDOUT $_}
 close $THD;
 system('rm .__tmp__vimpiped.txt');
