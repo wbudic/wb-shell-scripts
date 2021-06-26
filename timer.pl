@@ -86,7 +86,7 @@ while() {
    }else{
       $tc=0 if $tc++>3;      
       if (($cur%60)<2){
-         print  BOLD, GREEN, "\rTIMER ",  "--->", $stmp1, RESET, GREEN, $stmp2, RESET;
+         print  BOLD, GREEN, "\rTIMER ",  "---> ", $stmp1, RESET, GREEN, $stmp2, RESET;
       }else{
          print  RED "\rTimer ", BOLD;
          if($tc==0){print YELLOW, "-", RED, "--"}
@@ -94,26 +94,23 @@ while() {
          elsif($tc==2){print "--", YELLOW, "-"}
          else{print "---", YELLOW}
          print "> ", RED,  $stmp1, RESET, GREEN, $stmp2, RESET;
-      }
-      
-   }
-   
+      }      
+   }   
    if(!$exited){   
-                  if($t->key_pressed(1)){
-                     $stop = $stop?0:1;
-                     print RED " Stopwatch -> ".($stop?"Paused":"Runing")."!";
-                     if($stop){$stoptime = $stopwatch = $sur}else{$stopwatch = time -$stoptime}
-                     
-                  }elsif(int(rand(10)) > 4){
-                     $time = `date '+%r'`; $time =~ s/\n$//;
-                     print MAGENTA " Local Time: $time";
-                  }
+         if($t->key_pressed(1)){
+            $stop = $stop?0:1;
+            print RED " Stopwatch -> ".($stop?"Paused":"Runing")."!";
+            if($stop){$stoptime = $stopwatch = $sur}else{$stopwatch = time -$stoptime}
+            
+         }elsif(int(rand(10)) > 4){
+            $time = `date '+%r'`; $time =~ s/\n$//;
+            print MAGENTA " Local Time: $time";
+         }
    }else{
       exit 0;
    }
-
 }
-my $msg = "\n\rTimer ($$) has expired!\r\n";
+my $msg = "\r\nTimer has expired!\r\n";
 print RESET $msg;
 $t->echo(); $t->curvis(); undef $t;
 
