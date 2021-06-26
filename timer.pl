@@ -7,7 +7,7 @@ use Term::Screen;
 
 my $sta = time;
 my $end = $sta + 15*60;
-my ($msg, $time, $cur, $cmd); 
+my ($time, $cur, $sur, $cmd); 
 
  if(scalar @ARGV>0){
    foreach my $arg(@ARGV){
@@ -24,7 +24,7 @@ my ($msg, $time, $cur, $cmd);
             }
       }
    }
-   print "Activating timer($$)...\n";
+   print "Activated timer($$)...\n";
  }else{
     my $lst = 'Cancel\n 3m\n 5m\n 10m\n 15m\n 20m\n 25m\n 30m\n 40m\n 45m\n 50m\n 60m\n 90m\n 1h\n 2h\n 3h\n 4h\n 3s\n 10s\n 30s';
     my $cmd = qq(
@@ -68,24 +68,47 @@ $SIG{'INT'} = sub {
 };
 $| = 1;
 $t->noecho(); 
-$t->at($t->rows()-2,0); 
+$t->at($t->rows()-1,0); 
 
-for (;;) {
+my $stopwatch = time; my ($tt, $stoptime, $tc) = 0; my $stop =0;
+while() {
    $time = time;
    last if ($time >= $end);
    $cur = $end - $time; 
-   $msg = printf("%02d:%02d:%02d", $cur/(60*60), $cur/(60)%60, $cur%60); $msg=~s/^\d//;
-   if (($cur/(60)%60)>1){
-      print  RESET, YELLOW, "\rTimer-> ", BOLD, CYAN, $msg 
-   }else{
-      print  RESET, "\rTimer-> ", BOLD, RED, $msg 
-   }
-   sleep(1);
+   $sur = $time - $stopwatch if ! $stop;
    $t->flush_input();
-   $t->clreol();
-   exit 0 if $exited;
+   $t->clreol(); $t->curinvis();  
+   my $stmp1 = sprintf("%02d:%02d:%02d", $cur/(60*60), $cur/(60)%60, $cur%60); $stmp1=~s/^\d//;
+   my $stmp2 = sprintf(" [%02d:%02d:%02d]", $sur/(60*60), $sur/(60)%60, $sur%60); $stmp2=~s/^\d//;
+   $t->at($t->rows()-1, 5);
+   if (($cur/(60)%60)>1){
+      print  YELLOW "\rTimer-> ", RESET, BOLD, CYAN, $stmp1, RESET, GREEN $stmp2, RESET;
+   }else{
+      $tc=0 if $tc++>3;
+      print  RED "\rTimer ", BOLD;
+      if($tc==0){print YELLOW, "-", RED, "--"}
+      elsif($tc==1){print "-", YELLOW, "-", RED, "-"; print chr(7)}
+      elsif($tc==2){print "--", YELLOW, "-"}
+      else{print "---", YELLOW}
+      print "> ", RED,  $stmp1, RESET, GREEN, $stmp2, RESET;
+   }
+   
+   if(!$exited){   
+                  if($t->key_pressed(1)){
+                     $stop = $stop?0:1;
+                     print RED " Stopwatch -> ".($stop?"Paused":"Runing")."!";
+                     if($stop){$stoptime = $stopwatch = $sur}else{$stopwatch = time -$stoptime}
+                     
+                  }elsif(int(rand(10)) > 4){
+                     $time = `date '+%r'`; $time =~ s/\n$//;
+                     print MAGENTA " Local Time: $time";
+                  }
+   }else{
+      exit 0;
+   }
+
 }
-$msg = "\rTimer ($$) has expired!\r\n";
+my $msg = "\n\rTimer ($$) has expired!\r\n";
 print RESET $msg;
 $t->echo(); $t->curvis(); undef $t;
 
@@ -95,6 +118,7 @@ if($cmd){
 }else{
  system(qq(mpv --no-video '$ENV{HOME}/Fiona Apple - Fast As You Can-NbxqtbqyoRk.mkv'));
 }
+
 __END__
 COUNTDOWN TIMER
   by Will Budic (https://github.com/wbudic/wb-shell-scripts)
