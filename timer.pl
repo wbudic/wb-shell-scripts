@@ -73,7 +73,7 @@ $t->at($t->rows()-1,0);
 my $stopwatch = time; my ($tt, $stoptime, $tc) = 0; my $stop =0;
 while() {
    $time = time;
-   last if ($time >= $end);
+   last if ($time > $end);
    $cur = $end - $time; 
    $sur = $time - $stopwatch if ! $stop;
    $t->flush_input();
@@ -84,13 +84,18 @@ while() {
    if (($cur/(60)%60)>1){
       print  YELLOW "\rTimer-> ", RESET, BOLD, CYAN, $stmp1, RESET, GREEN $stmp2, RESET;
    }else{
-      $tc=0 if $tc++>3;
-      print  RED "\rTimer ", BOLD;
-      if($tc==0){print YELLOW, "-", RED, "--"}
-      elsif($tc==1){print "-", YELLOW, "-", RED, "-"; print chr(7)}
-      elsif($tc==2){print "--", YELLOW, "-"}
-      else{print "---", YELLOW}
-      print "> ", RED,  $stmp1, RESET, GREEN, $stmp2, RESET;
+      $tc=0 if $tc++>3;      
+      if (($cur%60)<2){
+         print  BOLD, GREEN, "\rTIMER ",  "--->", $stmp1, RESET, GREEN, $stmp2, RESET;
+      }else{
+         print  RED "\rTimer ", BOLD;
+         if($tc==0){print YELLOW, "-", RED, "--"}
+         elsif($tc==1){print "-", YELLOW, "-", RED, "-"; print chr(7)}
+         elsif($tc==2){print "--", YELLOW, "-"}
+         else{print "---", YELLOW}
+         print "> ", RED,  $stmp1, RESET, GREEN, $stmp2, RESET;
+      }
+      
    }
    
    if(!$exited){   
