@@ -6,7 +6,8 @@ use POSIX 'isatty';
 if (isatty(*STDIN)){
     print "No STDIN piped in, enter it then manually, end feed with ctrl+d!\n"
 }
-my $tmp = '.__tmp__vimpiped.txt';
+my $stm = `date +\%s`; $stm =~ s/\n$//;
+my $tmp = ".__tmp__vimpiped_$stm.tmp";
 my $lmd = `cat > $tmp; stat --printf='%z' $tmp`; 
 ####################################################################
 
