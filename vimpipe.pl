@@ -8,14 +8,21 @@ if (isatty(*STDIN)){
 }
 my $tmp = '.__tmp__vimpiped.txt';
 my $lmd = `cat > $tmp; stat --printf='%z' $tmp`; 
+####################################################################
+
 system("vim -n $tmp < /dev/tty > /dev/tty");
 
-#We simply quit, on modifications. So nothing gets further piped out.
+####################################################################
+# ~ Notice !
+# If it was a quit in vim, there is no modifications of the STDIN. 
+# i.e. an :wq was not issued. We then don't pipe nothing further out.
+#
 if($lmd ne `stat --printf='%z' $tmp`){
     my $THD;
     open($THD, "<", $tmp) or exit 0;
     while(<$THD>){print STDOUT $_}
     close $THD;
+    
 }
-system("rm $tmp");
+system("rm $tmp");    
 exit 1;
