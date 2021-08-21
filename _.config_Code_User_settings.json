@@ -1,0 +1,61 @@
+{
+    "gitlens.gitCommands.skipConfirmations": [
+        "fetch:command",
+        "stash-push:command",
+        "switch:command",
+        "push:command"
+    ],    
+    "go.useLanguageServer": true,
+    "workbench.startupEditor": "newUntitledFile",
+    "C_Cpp.updateChannel": "Insiders",
+    "erd-preview.dotPath": "/home/will/.local/graphviz-dot-linux-x64",
+    "erd-preview.erdPath": "/home/will/.local/linux_amd64_erd-go",
+    "git.autofetch": true,
+    "perl.perlInc": "/home/will/perl5/bin",
+    "perl.perlInc2": ["/home/will/perl5/bin","/usr/lib/x86_64-linux-gnu/perl/5.30.0/"],    
+    "perlSyntax.includePaths": ["/home/will/perl5/", "/usr/local/lib/x86_64-linux-gnu/perl/5.30.0/"],
+    "perl.ignoreDirs": [
+        null
+    ],
+    "perl.perltidyArgs": [
+
+        "-q",
+        "-et=4",
+        "-t",
+        "-ce",
+        "-l=0",
+        "-bar",
+        "-naws",
+        "-blbs=2",
+        "-mbl=2"
+    ],
+    "perl.pls": "perl",
+    "editor.fontSize": 12,
+    "files.autoSave": "afterDelay",
+    "diffEditor.ignoreTrimWhitespace": false,
+    "workbench.preferredDarkColorTheme": "Monokai Dimmed",
+    "workbench.colorCustomizations": {
+        "window.activeBorder":"#6b3232",
+        "tab.activeBackground": "#352121",
+        "!activityBar.background": "#6b3232",
+        "!contrastBorder":"#6b3232",
+        "editor.background": "#221919"
+    },
+    "[html]": {
+        "editor.defaultFormatter": "HookyQR.beautify"
+    },
+    "terminal.integrated.shell.linux": "bash",
+    "go.toolsManagement.autoUpdate": true,
+    "git.ignoredRepositories": [
+        ".history",
+        ".history/*",
+        ".vscode"
+    ],
+    "warmUp.changeCount": "15",
+    "telemetry.enableCrashReporter": false,
+    "beautify.ignore": "",
+    "window.zoomLevel": 1,
+    "security.workspace.trust.untrustedFiles": "open"
+    
+}
+
