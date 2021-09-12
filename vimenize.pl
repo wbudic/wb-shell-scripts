@@ -12,13 +12,13 @@ use warnings;
 
 use IPC::Run qw( run );
 
-my $TITLE = "FILE SELECTOR FOR VIM v.2.0";
+my $TITLE = "FILE SELECTOR FOR VIM v.2.1";
 
 my (@VIM, @vim_arguments, @ext_arguments , @prn_arguments)  = (("vim"), (),(),());
 my $HOME  = $ENV{'HOME'};
 my $PRNS  = "-path '$HOME/.' -o -path '$HOME/.cpan'";
-my $EXTS  = '-iname "*.sh" -o -iname "*.txt" -o -iname "*.pl" -o -iname "*.cgi" ! -name ".*"';
-my $NOTS  = '-path "*/go/*" -o -path "*/goroot/*" -o -path "*/.cache/*" -o -path "*/Steam/*" -o -path "*/.vscode/*"';
+my $EXTS  = '-iname "*.sh" -o -iname "*.txt" -o -iname "*.pl" -o -iname "*.cnf" -o -iname "*.config" -o -iname "*.cgi" ! -name ".*"';
+my $NOTS  = '-path "*/go/*" -o -path "*/goroot/*" -o -path "*/.cache/*" -o -path "*/Steam/*" -o -path "*/.vscode/*" -o -path "*/.history/*"';
 my $help  = qq(
 $TITLE
 
@@ -32,7 +32,7 @@ See bellow further available argument options, to go beyond the basics and exten
 Argument Options:
 
 Use the {_} option, is to instruct to open in vim into open_in_vim_tabs selected files or file.
-
+Use the {@} dir_path, to directly open inside vim the the whole search of files. Not a wise thing to do on a large directory structure.     
 Use {!}{path}, to exclude whole folder paths from to be displayed.
     i.e. !Videos !Music/lyrics - Will not search for files and folders to display in the ~/Videos and ~/Music/lyrics folders.
 
@@ -42,19 +42,28 @@ The {^}{ext} option is instruction which extension(s) to search for, and not use
     i.e ^.txt - Will search only by extension name for text files.
     i.e ^.c ^cpp - Will search only for c and cpp source files.
 
-Examples:
+
+Usage Examples:
 
 To find to select and open in open_in_vim_tabs with read only mode text files:
     $0 _ -R txt
 
-To find and open selected files in buffers, by extension type of *.sh and *.pl:
+To find and open selected files in buffers, by extension type of *.c, *.sh and *.pl:
     $0 _ c sh pl
+To buffer open all found by default extensions:
+    $0 @ .
 );
-my $PATHS = $HOME; processArguments(); ##-a !-type -d
-my $cmd = qq(find -H $PATHS \\( $PRNS \\) -a -type d -prune -o -type f \\( $EXTS \\) 
-                  -a ! \\( $NOTS \\)
-             | fzf -m --tac --preview 'batcat --color=always {}'
-          );$cmd =~ s/\s+/ /g;
+my $PATHS = $HOME; my ($select_all,$cmd) = (0,""); 
+processArguments(); 
+$cmd = "find -H $PATHS \\( $PRNS \\) -a -type d -prune -o -type f \\( $EXTS \\) -a ! \\( $NOTS \\) ";
+
+if($select_all){
+	$cmd .= '| sort -n';
+}
+else{
+	$cmd .= "| fzf -m --tac --preview 'batcat --color=always {}'"
+}
+        $cmd =~ s/\s+/ /g;
 my $lst = qx($cmd);
 my @lst = split(/\n/, $lst);
 print "\nFile selector -> [$cmd]\n";
@@ -65,7 +74,7 @@ if(@lst>0){
     }     
     print join (' ', @VIM), "\n";
     ###
-        run \@VIM;
+      run \@VIM;
     ###
 }else{
     print "$0 has been abruptly terminated.\n"     
@@ -76,18 +85,27 @@ sub processArguments {
     if (@ARGV>0) {  
             foreach my $argument(@ARGV){
                 #print "{{{$argument}}}"; 
-                if($argument =~ '~'){
+                if($argument =~ /~/){
                     die '~'
-                }
-                if($argument =~ /^\-/){
+                }elsif($argument eq '@'){
+		            $select_all = 1;	print "\nAll found files will be vim buffered.";
+                    $PATHS = $ENV{'PWD'};
+		            next;
+	            }elsif($argument eq '.'){
+		            print "\nLocal directory type scan from ", $ENV{'PWD'};
+		            $PATHS = $ENV{'PWD'};
+		            next;
+	            }
+                
+            if($argument =~ /^\-/){
                     if($argument=~/(^\-*\?)/){
                         print $help;
                         exit;  
                     }
                     push @vim_arguments, $argument;
                 }elsif($argument =~ /^_/){
-                        $open_in_vim_tabs = 1;
-                }elsif($argument ne $ENV{'HOME'}){           
+                       $open_in_vim_tabs = 1;
+	        }elsif($argument ne $ENV{'HOME'}){          
                     if($argument=~/^\^\w+/ ){
                         print "\nTranslating ext -> $argument\n";
                         $translate = substr $argument,1; $translate = $translate = substr $argument, 2 if $translate =~ /^\*/;
@@ -137,7 +155,7 @@ sub processArguments {
                             if($explicit){$PATHS .= ' '.$argument}else{$PATHS = $argument; $explicit = 1}
                     }
                     else{
-                            print "\nTranslating argument as extension sicking -> *$argument\n";
+                            print "\nTranslating argument as file extension -> *$argument\n";
                             push @ext_arguments, "-iname \"*.$argument\" -o";
                     }                    
                 }
