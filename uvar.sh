@@ -53,15 +53,15 @@ function readUVAR(){
 val=$HOME/.config/.uvar_$1;
 if [ -f $val ]; then
    val=$(<$val);
-   echo "$val";
+   echo -e "$val";
 fi
 exit;
 }
 function writeUVAR(){ 
-[[ -z "$print" ]] && echo "$name=$value"
-echo $value > $HOME/.config/.uvar_$name
+[[ -z "$print" ]] && echo -e "$name=$value"
+echo -e "$value" > $HOME/.config/.uvar_$name
 if (( $(grep -c . <<<"$value") < 2 )); then
-   export $name=$value;
+   export $name="$value";
 fi
 [[ "$print" -eq "1" ]] && echo "$value"
 exit;
@@ -71,7 +71,7 @@ for file in $HOME/.config/.uvar_*
 do
  n=$(echo $file | sed "s/.*\.config\/.uvar_//")
  v=$(<$file)
- echo "$n=$v"
+ echo -e "$n=$v"
 done
 exit;
 }
@@ -97,7 +97,7 @@ do
 done
 shift $((OPTIND -1));
 if [ -n "$value" ]; then
-echo $value > $HOME/.config/.uvar_$name;
+echo -e "$value" > $HOME/.config/.uvar_$name;
 [[ "$print" -eq "1" ]] && echo "$value"
 exit;
 fi
