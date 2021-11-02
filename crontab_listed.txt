@@ -1,5 +1,5 @@
 ### 
-# Following is the crontab -l of user wbudic. From 
+# Following is the crontab -l of user wbudic (https://github.com/wbudic/wb-shell-scripts) 
 # He keeps all the shell cron files handy in his home directory prefixed with 'cron_".
 # These are NOT made chmod +x cron_*, which is handy. And possible under ubuntu and mint Linux systems.
 #
