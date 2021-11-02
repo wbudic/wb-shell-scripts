@@ -1,0 +1,11 @@
+### 
+# Following is the crontab -l of user wbudic. From 
+# He keeps all the shell cron files handy in his home directory prefixed with 'cron_".
+# These are NOT made chmod +x cron_*, which is handy. And possible under ubuntu and mint Linux systems.
+#
+# m h  dom mon dow   command
+#*/1 * * * * bash ~/cron_test.sh >> ~/cron.log 2>&1
+0 */1 * * * bash ~/cron_bitcoin.sh >> ~/cron.log 2>&1
+0 */4 * * * bash ~/cron_weather.sh >> ~/cron.log 2>&1
+0 */6 * * * bash ~/cron_exchange_rate.sh >> ~/cron.log 2>&1
+0 */8 * * * bash ~/cron_log_maintainer.sh > /dev/null 2>&1

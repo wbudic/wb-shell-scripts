@@ -75,13 +75,24 @@ do
 done
 exit;
 }
+function delUVAR(){
+   val=$HOME/.config/.uvar_$1;
+if [ -f $val ]; then
+   rm -f "$val";
+   echo -e "Deleted $val";
+else
+   echo -e "Not found $val";
+fi
+exit;
+}
 
 argc=$#
 argv=("$@")
 print=0
-[ ! -t 0 ] && value=$(</dev/stdin)
+#20211102 Disabled following stdin pipe checking as it rises access errors in cron jobs.
+#[ ! -t 0 ] && value=$(</dev/stdin)
 
-while getopts ":e:r:n:v:lo" opt
+while getopts ":e:d:r:n:v:lo" opt
 do
     case "${opt}" in
         n) name=${OPTARG};;
@@ -89,6 +100,7 @@ do
 	   writeUVAR $name $value;;
 	r) readUVAR ${OPTARG};;
 	l) list;;
+   d) delUVAR ${OPTARG};;
 	o) print="1";;
 	e) echo "Err: -e Not Implemented Yet!";;
 	:) echo "Invalid option: $OPTARG, requires an argument.";;
