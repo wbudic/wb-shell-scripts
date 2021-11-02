@@ -2,10 +2,10 @@
 
 my @N=();
 
-for(1..18){&pickSix}
+&pickSix for 1..28;
 
 sub pickSix{
-    for (0..5){$N[$_] = &uniqueRandom}
+    $N[$_] = &uniqueRandom for 0..5;
     @N = sort {$a <=> $b} @N;
     print join(", ", @N), "\n";
 }
