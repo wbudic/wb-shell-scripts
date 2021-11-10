@@ -16,8 +16,8 @@ if [ -f ~/cron.log  ]; then
     fi   
     #echo -e "now\t\t:$now\nchtime\t\t:$chtime\ntwo_days_back\t:$two_days_back\n"
     if [ "$chtime" -lt "$two_days_back" ]; then
-        tail -n 100 ~/cron.log > ~/cron.log
-        echo -e $(date +"%D %T") $(basename $0) "\nTAIL TRIMED LOG to 100 lines\n" >> ~/cron.log
+	    tail -n 100 ~/cron.log > ~/cron.tmp.log; mv ~/cron.tmp.log ~/cron.log; 
+        echo -e $(date +"%D %T") $(basename $0) "\nTAIL TRIMED LOG to 100 lines" >> ~/cron.log
         ~/uvar.sh -n CRON_LOG_CHTIME -v ""
     fi
 fi
