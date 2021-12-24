@@ -58,26 +58,27 @@ my ($time, $cur, $sur, $cmd);
 		}
  }
 
-my $t = Term::Screen->new();
-my $exited = 0;
-$SIG{'INT'} = sub {
-	print RESET "\n[CTRL]+[C] <- Terminated!\r\n";  
-	$t->echo(); 
-	$t->curvis(); 
-	$exited=1; 
+our $t = Term::Screen->new();
+our $exited = 0;
+$SIG{'INT'} = sub { 
+   $exited=1;  
+	print RESET, "\n[CTRL]+[C] '<- Terminated!\n"; 
+   $t->echo();	$t->curvis(); system('echo -en "\e[?25h"'); $t->at($t->rows()-2, 0); $t->dl(); $t->at($t->rows()-1, 0);
+   exit 0;
 };
-$| = 1;
-$t->noecho(); 
-$t->at($t->rows()-1,0); 
+
+
 
 my $stopwatch = time; my ($tt, $stoptime, $tc) = 0; my $stop =0;
+$t->at($t->rows()-1, 0); $t->curinvis();
 while() {
    $time = time;
    last if ($time > $end);
+   
    $cur = $end - $time; 
    $sur = $time - $stopwatch if ! $stop;
    $t->flush_input();
-   $t->clreol(); $t->curinvis();  
+   $t->clreol();   
    my $stmp1 = sprintf("%02d:%02d:%02d", $cur/(60*60), $cur/(60)%60, $cur%60); $stmp1=~s/^\d//;
    my $stmp2 = sprintf(" [%02d:%02d:%02d]", $sur/(60*60), $sur/(60)%60, $sur%60); $stmp2=~s/^\d//;
    $t->at($t->rows()-1, 5);
@@ -96,29 +97,35 @@ while() {
          print "> ", RED,  $stmp1, RESET, GREEN, $stmp2, RESET;
       }      
    }   
-   if(!$exited){   
-         if($t->key_pressed(1)){
+   if($exited){exit 1}
+   if($t->key_pressed(1)){
             $stop = $stop?0:1;
-            print RED " Stopwatch -> ".($stop?"Paused":"Runing")."!";
-            if($stop){$stoptime = $stopwatch = $sur}else{$stopwatch = time -$stoptime}
-            
-         }elsif(int(rand(10)) > 4){
-            $time = `date '+%r'`; $time =~ s/\n$//;
-            print MAGENTA " Local Time: $time";
-         }
-   }else{
-      exit 0;
+            print RED " Stopwatch -> ".($stop?"Paused":"Running")."!";
+            if($stop){$stoptime = $stopwatch = $sur}else{$stopwatch = time -$stoptime}            
+   }elsif(int(rand(10)) > 4){
+            my $ptime = `date '+%r'`; $ptime =~ s/\n$//;
+            print MAGENTA " Local Time: $ptime", RESET;
    }
 }
+
 my $msg = "\r\nTimer has expired!\r\n";
 print RESET $msg;
-$t->echo(); $t->curvis(); undef $t;
+$t->curvis(); $t->echo(); system('echo -en "\e[?25h"');
 
 `/usr/bin/notify-send "TIMER ($$)" "$msg"&`;
 if($cmd){
  system($cmd);
 }else{
- system(qq(mpv --no-video '$ENV{HOME}/Fiona Apple - Fast As You Can-NbxqtbqyoRk.mkv'));
+ #system(qq(mpv --no-video '$ENV{HOME}/Fiona Apple - Fast As You Can-NbxqtbqyoRk.mkv'));
+ my @args = 
+    ("mpv" ,"--vid=no","--loop-file=3", "chiming-and-alarm-beeps.wav");
+    #20211029 NOTICE mpv had to remap when called from perl fort ctr+c in ->  ~/.config/mpv/input.conf
+    #                added: ctrl+c quit 4
+    #                0x3 quit 4
+   if(system(@args)!=0){
+      die "Terminated $!";
+   }
+   exit 1;
 }
 
 __END__
