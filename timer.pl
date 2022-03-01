@@ -83,7 +83,7 @@ while() {
    my $stmp2 = sprintf(" [%02d:%02d:%02d]", $sur/(60*60), $sur/(60)%60, $sur%60); $stmp2=~s/^\d//;
    $t->at($t->rows()-1, 5);
    if (($cur/(60)%60)>1){
-      print  YELLOW "\rTimer-> ", RESET, BOLD, CYAN, $stmp1, RESET, GREEN $stmp2, RESET;
+      print  YELLOW "\rTimer-> ", RESET, BOLD, CYAN, $stmp1, RESET, GREEN $stmp2, RESET;      
    }else{
       $tc=0 if $tc++>3;      
       if (($cur%60)<2){
@@ -113,20 +113,23 @@ print RESET $msg;
 $t->curvis(); $t->echo(); system('echo -en "\e[?25h"');
 
 `/usr/bin/notify-send "TIMER ($$)" "$msg"&`;
+
 if($cmd){
  system($cmd);
 }else{
  #system(qq(mpv --no-video '$ENV{HOME}/Fiona Apple - Fast As You Can-NbxqtbqyoRk.mkv'));
  my @args = 
-    ("mpv" ,"--vid=no","--loop-file=3", "chiming-and-alarm-beeps.wav");
+    ("mpv" ,"--vid=no","--loop-file=3", "$ENV{HOME}/Music/chiming-and-alarm-beeps.wav");
     #20211029 NOTICE mpv had to remap when called from perl fort ctr+c in ->  ~/.config/mpv/input.conf
     #                added: ctrl+c quit 4
     #                0x3 quit 4
    if(system(@args)!=0){
-      die "Terminated $!";
+      print "\nTerminated $!";
    }
-   exit 1;
+  
 }
+$t->curvis(); $t->echo(); $t->clreol();
+$t->at($t->rows()-1, 0);  
 
 __END__
 COUNTDOWN TIMER
