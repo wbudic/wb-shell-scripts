@@ -1,0 +1,7 @@
+# Slap that keyboard bitch with rainbow colours, place in ~/.profile the following: g213-led -p .keyboard_rgb 
+r 1 00FFFF
+r 2 FFFF00
+r 3 FFFFFF
+r 4 FF0000
+r 5 78FFFF
+
