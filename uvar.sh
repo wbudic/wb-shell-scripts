@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # uvar.sh - Creates a User Variable that is persisted between shell invocations or when ever its value changes.
 # -n {name} Name of user variable.
 # -v {value...} Desired value
