@@ -118,7 +118,7 @@ while() {
    }
 }
 
-$t->curvis()->normal()->at($t->rows()-1, 0)->clreol();
+$t->curvis()->normal();
 my $msg = "\r\nTimer has expired!\n";
 printf "\r $msg"; $t->curvis();
 
