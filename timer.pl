@@ -7,32 +7,38 @@ use Term::Screen;
 
 my $sta = time;
 my $end = $sta + 15*60;
-my ($time, $cur, $sur, $cmd); 
+my ($time, $cur, $sur, $cmd); my $row = 3;
+our $t = Term::Screen->new();
+our $exited = 0;
 
- if(scalar @ARGV>0){
+if(scalar @ARGV>0){
    foreach my $arg(@ARGV){
       if ($arg =~ /\d+/){
-            $end = $sta + $arg * 60; print "Minutes -> $arg\n";
+            $end = $sta + $arg * 60; 
+            print "Minutes -> $arg\n";
       }else{
 
             if($arg =~ m/^-+.*/){
                while(<DATA>){print $_}
-               exit;
+               exit;            
             }
             else{
-               $cmd = $arg; print "Command -> $cmd\n";
+               $cmd = $arg; 
+               print "Command -> $cmd\n";
             }
       }
    }
-   print "Activated timer($$)...\n";
+   print "\rActivated timer($$)...\n";
  }else{
     my $lst = 'Cancel\n 3m\n 5m\n 10m\n 15m\n 20m\n 25m\n 30m\n 40m\n 45m\n 50m\n 60m\n 90m\n 1h\n 2h\n 3h\n 4h\n 3s\n 10s\n 30s';
     my $cmd = qq(
        echo '$lst'|~/.fzf/bin/fzf --no-multi --cycle --height=12 --border --margin 1,1% --pointer='->' --color=dark --print-query
                           --info=inline --header='<- Please select your desired timeout. Check out your, ^ arrow, PgUp, PgDwn, and ESC key.'
-    ); $cmd =~ s/[\n\r\t]//g; 
-    my $sel=`$cmd`;$sel =~ s/\s//g; 
-		if($sel ne "Cancel"){
+    ); 
+    $cmd =~ s/[\n\r\t]//g; 
+    my $sel=`$cmd`;
+    $sel =~ s/\s//g; 
+    if($sel ne "Cancel"){
          $sta = time;
          if($sel =~ m/m$/){
             $sel =~ s/m$//;
@@ -58,15 +64,12 @@ my ($time, $cur, $sur, $cmd);
 		}
  }
 
-our $t = Term::Screen->new();
-our $exited = 0;
 sub interupt {
-	$exited=1;$t->at($t->rows()-1, 0);
+	$exited=1;$t->at($row, 0);
 	print RESET, "\n[CTRL]+[C] '<- Terminated!\n";
-	$t->echo();
-	$t->curvis();
 	system('echo -en "\e[?25h"');
-	$t->at($t->rows()-2, 0)->dl();
+	$t->dl()->at($row+2, 0)->clreol();
+	$t->echo()->curvis()->dl();
 	exit 0;
 };
 
@@ -75,7 +78,7 @@ local $SIG{'INT'} = *interupt;
 my $stopwatch = time; 
 my ($tt, $stoptime, $tc) = 0; 
 my $stop =0;
-$t->at($t->rows()-1, 0)->curinvis();
+$t->at($row, 0)->curinvis();
 while() {
    $time = time;
    last if ($time > $end);
@@ -87,8 +90,7 @@ while() {
    my $stmp1 = sprintf("%02d:%02d:%02d", $cur/(60*60), $cur/(60)%60, $cur%60); 
    $stmp1=~s/^\d//;
    my $stmp2 = sprintf(" [%02d:%02d:%02d]", $sur/(60*60), $sur/(60)%60, $sur%60); 
-   $stmp2=~s/^\d//;
-   $t->at($t->rows()-1, 5);
+   $stmp2=~s/^\d//;   
 
    if (($cur/(60)%60)>1){
       print  YELLOW "\rTimer-> ", RESET, BOLD, CYAN, $stmp1, RESET, GREEN $stmp2, RESET;      
@@ -119,18 +121,24 @@ while() {
 }
 
 $t->curvis()->normal();
-my $msg = "\r\nTimer has expired!\n";
-printf "\r $msg"; $t->curvis();
+my $msg = "\r\nTimer has expired!";
+printf "\r$msg\n"; $t->curvis();
 
 `/usr/bin/notify-send "TIMER ($$)" "$msg"&`;
 
 if($cmd){
- system($cmd);
-}else{#Use a full path to the sound file for best results.
-	if(system("mpv --vid=no --loop-file=1 $ENV{HOME}/Music/chiming-and-alarm-beeps.wav > /dev/null")!=0){
-		 &interupt;
-   }		 
-	$t->curvis()->normal()->at($t->rows()-2, 0)->clreol();  
+	$t->echo()->curvis();
+	system('echo -en "\e[?25h"'); $t->dl();
+    my @res = qx/$cmd/; 
+	foreach my $l(@res){
+		$l =~ s/\s*$//;
+		print RESET $l, "\r\n";
+	}
+}else{
+	system("mpv --vid=no --loop-file=3 $ENV{HOME}/Music/chiming-and-alarm-beeps.wav > /dev/null");
+	$t->at($row+2, 0)->clreol();	
+	system('echo -en "\e[?25h"');
+	$t->dl()->at($row+2, 0)->clreol()->echo()->curvis();
 }
 exit 1;
 __END__
