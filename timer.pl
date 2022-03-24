@@ -10,7 +10,7 @@ my $end = $sta + 15*60;
 my ($time, $cur, $sur, $cmd); my $row = 3;
 our $t = Term::Screen->new();
 our $exited = 0;
-
+$t->clrscr();
 if(scalar @ARGV>0){
    foreach my $arg(@ARGV){
       if ($arg =~ /\d+/){
@@ -54,8 +54,8 @@ if(scalar @ARGV>0){
             print "Setting timer($$) to $sel in seconds.\n";
             $sel =~ s/s$//;
             $end = $sta + $sel;
-
-         }else{
+         }
+         else{
             exit 1;#<- should not be possible!
          }
          sleep(1);   
