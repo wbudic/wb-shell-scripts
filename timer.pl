@@ -1,23 +1,26 @@
-#!/bin/perl 
+#!/usr/bin/env perl
 use strict;
 use warnings;
 use Term::ANSIColor qw(:constants);
 use Term::Screen;
 
-
 my $sta = time;
 my $end = $sta + 15*60;
-my ($time, $cur, $sur, $cmd); my $row = 3;
+my ($time, $cur, $sur, $cmd); 
+
+our @pos = getCPos();
 our $t = Term::Screen->new();
 our $exited = 0;
-$t->clrscr();
+my $row = $pos[0];
+$t->at($row,0)->clreol();
+
 if(scalar @ARGV>0){
+   printf "\rActivated count down timer($$)...(Use CTRL+C to terminate!)\n";$row+=2;
    foreach my $arg(@ARGV){
       if ($arg =~ /\d+/){
             $end = $sta + $arg * 60; 
-            print "Minutes -> $arg\n";
+            print "Countdown set to minutes -> $arg\n";
       }else{
-
             if($arg =~ m/^-+.*/){
                while(<DATA>){print $_}
                exit;            
@@ -28,7 +31,6 @@ if(scalar @ARGV>0){
             }
       }
    }
-   print "\rActivated timer($$)...\n";
  }else{
     my $lst = 'Cancel\n 3m\n 5m\n 10m\n 15m\n 20m\n 25m\n 30m\n 40m\n 45m\n 50m\n 60m\n 90m\n 1h\n 2h\n 3h\n 4h\n 3s\n 10s\n 30s';
     my $cmd = qq(
@@ -66,16 +68,32 @@ if(scalar @ARGV>0){
 
 sub interupt {
 	$exited=1;$t->at($row, 0);
-	print RESET, "\n[CTRL]+[C] '<- Terminated!\n";
-	system('echo -en "\e[?25h"');
-	$t->dl()->at($row+2, 0)->clreol();
-	$t->echo()->curvis()->dl();
+	print RESET, "\n[CTRL]+[C] '<- Terminated!\n";	
+	system('echo -en "\e[?25h"'); 
+	$t->dl()->at($row+2, 0)->clreol()->echo()->curvis();	
 	exit 0;
 };
-
 local $SIG{'INT'} = *interupt;
 
-my $stopwatch = time; 
+#Following fckn sub took me two days to figure out.
+sub getCPos {
+my $x=q!
+exec < /dev/tty
+oldstty=$(stty -g)
+stty raw -echo min 0
+printf "\033[6n" > /dev/tty
+sleep 0.5  
+IFS=';' read -r row col
+stty $oldstty
+row=$(expr $(expr substr $row 3 99) - 1)        # Strip leading escape off
+col=$(expr ${col%R} - 1)                        # Strip trailing 'R' off
+echo $col,$row
+!;
+$x=qx($x);
+return reverse split ',', $x;
+}
+
+my $stopwatch = time;
 my ($tt, $stoptime, $tc) = 0; 
 my $stop =0;
 $t->at($row, 0)->curinvis();
@@ -159,3 +177,7 @@ sudo apt install mvp
 fzf (don't use apt to install, can be crap old version,
     install manually for vim and from your home, and symbolik link)
 i.e. ln -s ~/.fzf/bin/fzf ~/.local/bin/fzf 
+Install in .bashrc alias to path (mine is):
+alias timer="~/timer.pl"
+Install chime or alarm to play:
+cp ./chiming-and-alarm-beeps.wav ~/Music/chiming-and-alarm-beeps.wav 
