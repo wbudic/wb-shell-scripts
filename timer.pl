@@ -19,7 +19,7 @@ if(scalar @ARGV>0){
    foreach my $arg(@ARGV){
       if ($arg =~ /\d+/){
             $end = $sta + $arg * 60; 
-            print "Countdown set to minutes -> $arg\n";
+            printf "\rCountdown set to minutes -> $arg\n";
       }else{
             if($arg =~ m/^-+.*/){
                while(<DATA>){print $_}
@@ -27,7 +27,7 @@ if(scalar @ARGV>0){
             }
             else{
                $cmd = $arg; 
-               print "Command -> $cmd\n";
+              print "\rCommand to run after -> $cmd\n";$row++
             }
       }
    }
