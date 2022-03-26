@@ -67,10 +67,11 @@ if(scalar @ARGV>0){
  }
 
 sub interupt {
-	$exited=1;$t->at($row, 0);
-	print RESET, "\n[CTRL]+[C] '<- Terminated!\n";	
-	system('echo -en "\e[?25h"'); 
-	$t->dl()->at($row+2, 0)->clreol()->echo()->curvis();	
+	$exited=1;	
+	system('echo "\e[?25h"');#sleep 1;
+	$row+=1;	
+	$t->at($row, 0)->clreos()->echo()->curvis();	
+	print RESET, "[CTRL]+[C] <- Terminated!\r\n";
 	exit 0;
 };
 local $SIG{'INT'} = *interupt;
@@ -139,23 +140,24 @@ while() {
 }
 
 $t->curvis()->normal();
-my $msg = "\r\nTimer has expired!";
-printf "\r$msg\n"; $t->curvis();
+my $msg = "Timer has expired!"; 
+print GREEN "\r$msg"; $t->curvis();
 
 `/usr/bin/notify-send "TIMER ($$)" "$msg"&`;
 
 if($cmd){
-	$t->echo()->curvis();
-	system('echo -en "\e[?25h"'); $t->dl();
+	$t->echo();
+	system('echo "\e[?25h"'); 
+	print YELLOW "\rResult of ->`".$cmd, "` is:\r\n";
     my @res = qx/$cmd/; 
 	foreach my $l(@res){
-		$l =~ s/\s*$//;
+		$l =~ s/\n*$//;
 		print RESET $l, "\r\n";
 	}
 }else{
 	system("mpv --vid=no --loop-file=3 $ENV{HOME}/Music/chiming-and-alarm-beeps.wav > /dev/null");
 	$t->at($row+2, 0)->clreol();	
-	system('echo -en "\e[?25h"');
+	system('echo "\e[?25h"');
 	$t->dl()->at($row+2, 0)->clreol()->echo()->curvis();
 }
 exit 1;
