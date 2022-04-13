@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
-use Term::ANSIColor qw(:constants);
+use Term::ANSIColor 2.01 qw(:constants colored);
 use Term::Screen;
 
 my ($sta,$end) = (time,undef);#my $end = $sta + 15*60;
@@ -32,8 +32,8 @@ if( scalar @ARGV > 0 ){
             &fzf;
         }
         elsif ( $arg =~ /^-+[^0-9]+/ ) {
-			$t->at($row-2,0)->clreol();undef $t; 
-            while (<DATA>) {print $_}
+			$t->at($row-3,0)->clreol();undef $t; 
+            while (<DATA>) {print transPrint($_)}
             exit;
         }
         else {
@@ -43,6 +43,31 @@ if( scalar @ARGV > 0 ){
         }
 	}
 }
+
+# Hey, let's do some Perl Language only available ANSI magic.
+my $cur_col;
+sub transPrint { my $ln = shift;
+	if($ln =~ /<\/*.*>/){
+	   ($ln=~/(.*)<(.*)>(.*)<\/*(.*)>(.*)/);	   
+	   if($2){
+	   		print $1, colored([$2], $3), $5, "\n" if length($2)>1;
+			undef $cur_col;
+	   }else {		   
+		   ($ln=~/<\/*(.*)>(.*)|(.*)<\/*(.*)>/);
+		   if($4){
+			print colored([$cur_col], $3), "\n";
+			undef $cur_col;
+		   }else{
+		    $cur_col=$1;
+		   	print colored([$cur_col], $2), "\n"
+		   }
+	   }
+	}	
+	elsif($cur_col){print colored([$cur_col], $ln)}
+	else{print $ln;}	
+return
+}
+
 &fzf unless $end;
 
 my $stopwatch = time;
@@ -96,7 +121,7 @@ while() {
 	}else{
 		$ptime = `date '+%r'`;
 		$ptime =~ s/\n$//;
-		print MAGENTA, BLINK, " Local Time: $ptime", RESET unless $stop_countdown |$stop;
+		print MAGENTA,  " Local Time: $ptime", RESET unless $stop_countdown |$stop;
 	}
 }
 
@@ -117,7 +142,7 @@ if($cmd){
 		$l =~ s/\n*$//;
 		print RESET $l, "\r\n";
 	}
-}else{	
+}else{	   #MODIFY BELLOW TO DESIRED ALARM, or move the provided ./chiming-and-alarm-beeps.wav to your Music folder.
 	system("mpv --vid=no --loop-file=3 $ENV{HOME}/Music/chiming-and-alarm-beeps.wav > /dev/null");
 	$row-=5 if $row>$t->rows();
 	$t->at($row+1, 0)->clreol()->at($row, 0); print BRIGHT_RED, "\r$msg  [ $ptime ]", RESET;
@@ -160,7 +185,7 @@ my $cmd = qq(
 	}else{
 		exit;
 	}
-	return $t->at($row-5, 0)
+	return $t->at($row-=5, 0)
 }
 sub interupt {
 	$exited=1;	
@@ -190,20 +215,22 @@ $x=qx($x);
 return reverse split ',', $x;
 }
 __END__
-THE BEST COUNTDOWN TIMER
+
+<bold>THE BEST COUNTDOWN TIMER</bold>
   by Will Budic (https://github.com/wbudic/wb-shell-scripts)
-Syntax:
 
-$ ./timer.pl {minutes} {shell_cmd} {-t 'Title of instance'} 
+<green bold>Syntax</green on_black>:
 
-Without any arguments, uses the fzf utility to prompt for minute period.
-Defaults to 15 minutes, if only shell command is given.
-Modify last line in script to include own alarm/music to play as default on timer expiry.
-System bells are unacceptable.
+$ <bold>./timer.pl</bold> {minutes} {shell_cmd} {-t 'Title of instance'} 
 
-You can now pause, for what ever reason the countdown, by pressing 'p'.
+<yellow>Without any arguments, it uses the fzf utility to prompt for minute period.
+Modify line containing mpv path in script to include own alarm/music to play as default on timer expiry.
+Scroll above this script to line: 146
+System bells are unacceptable.</yellow>
 
-Requirements:
+Also, you can now pause, for what ever reason the countdown, by pressing 'p'.
+
+<green bold>Requirements</green>:
 fzf (don't use apt to install, can be crap old version,
     install manually for vim and from your home, and symbolik link)
 i.e. ln -s ~/.fzf/bin/fzf ~/.local/bin/fzf 
@@ -212,3 +239,4 @@ Install in .bashrc alias to path (mine is):
 alias timer="~/timer.pl"
 Install chime or alarm to play:
 cp ./chiming-and-alarm-beeps.wav ~/Music/chiming-and-alarm-beeps.wav
+---
