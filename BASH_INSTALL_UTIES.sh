@@ -64,3 +64,8 @@ sudo apt install mpv -y
 
 sudo apt install powerline -y
 sudo apt install pv jq suckless-tools -y
+sudo apt install python3-pip
+sudo apt install python3-q-text-as-data ffmpeg -y
+python3 -m pip install -U yt-dlp -y
+
+
