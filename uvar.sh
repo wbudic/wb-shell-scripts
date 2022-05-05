@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 # uvar.sh - Creates a User Variable that is persisted between shell invocations or when ever its value changes.
-# -n {name} Name of user variable.
-# -v {value...} Desired value
-# -e Option turns environmental variable into user variable or error if not defined.
+
 function help(){
 cat <<EOF
 
@@ -14,9 +12,14 @@ Making them gloabal named values to sessions, between logins and subsequent bash
 --- Options ---
 -n - Name of variable
 -v - Value to assign.
+-e - Option turns environmental variable into a user variable or error if not defined.
 -r - Read named variable.
--o - Output only the value of named variable, pipes out piped in.
 -l - List all the available user variables.
+-o - Output only the value of named variable, pipes out piped in.
+-d - Delete the named uvar.
+-s - Alternative store location (not recommended option to use).
+     Default store location is ~/.config. 
+     Setting it to $0 -s /var/tmp will store to temporary storage that is volatile memory.
 
 Usage: $0 {-o,-l} -n {name} -v {value} -r {name} {value}
 $0 {name}
@@ -31,7 +34,8 @@ Get this scripts latest version at -> https://github.com/wbudic/wb-shell-scripts
 Terminal Shenanigans:
 
 ? "SEXY TIME!" | uvar -n COFFEE_TIME <- Will silently set the value via pipe.
-? "SEXY TIME!" | uvar -o -n COFFEE_TIME <- Will set the value and piped it further out.
+? "SEXY TIME!" | uvar -o -n COFFEE_TIME | cat <- Will set the value and pipe it further out.
+uvar -o -n COFFEE_TIME | cat <- Will read the uvar COFFEE_TIME and pipe it further out.
 
 The '?' above is alias ? 'echo ' set in ~/.bashrc
 
@@ -50,7 +54,7 @@ EOF
 exit;
 }
 function readUVAR(){
-val=$HOME/.config/.uvar_$1;
+val=$STORE/.uvar_$1;
 if [ -f $val ]; then
    val=$(<$val);
    echo -e "$val";
@@ -58,25 +62,28 @@ fi
 exit;
 }
 function writeUVAR(){ 
-[[ -z "$print" ]] && echo -e "$name=$value"
-echo -e "$value" > $HOME/.config/.uvar_$name
+[[ -z "$print" ]] && echo -e "$1=$2"
+echo -e "$value" > $STORE/.uvar_$1
 if (( $(grep -c . <<<"$value") < 2 )); then
-   export $name="$value";
+   export $1="$2";
 fi
 [[ "$print" -eq "1" ]] && echo "$value"
 exit;
 }
 function list(){
-for file in $HOME/.config/.uvar_*
+for file in $STORE/.uvar_*
 do
- n=$(echo $file | sed "s/.*\.config\/.uvar_//")
- v=$(<$file)
- echo -e "$n=$v"
+#echo $file
+n=$(echo $file | sed "s/$EXP//")
+if [[ -f $file ]]; then
+   v=$(<$file)
+   echo -e "$n=$v" 
+fi
 done
 exit;
 }
 function delUVAR(){
-   val=$HOME/.config/.uvar_$1;
+   val=$STORE/.uvar_$1;
 if [ -f $val ]; then
    rm -f "$val";
    echo -e "Deleted $val";
@@ -86,15 +93,28 @@ fi
 exit;
 }
 
+STORE=$HOME/.config;
+EXP=".*config\/.uvar_"
+
 argc=$#
 argv=("$@")
 print=0
-#20211102 Disabled following stdin pipe checking as it rises access errors in cron jobs.
-#[ ! -t 0 ] && value=$(</dev/stdin)
 
-while getopts ":e:d:r:n:v:lo" opt
+while getopts ":e:d:r:n:v:s:lo" opt
 do
     case "${opt}" in
+        s) if [[ -d "${OPTARG}" ]]; then                
+               if [[ ${OPTARG} =~ ^\/ ]]; then
+                  export STORE=${OPTARG}/${USER}; [[ ! -d $STORE ]] && mkdir $STORE                  
+               else
+                  STORE=${OPTARG}                  
+               fi
+               EXP=`echo "$STORE" | sed -e "s:\/:\\\\\/:g"`
+               EXP=".*$EXP\/.uvar_";# echo -e "[[[[$EXP]]"              
+               [[ $? > 0 ]] && echo "Err: $?  with store location: $STORE" && STORE=$HOME/.config
+           else
+               echo -e "Err: Invalid store location: ${OPTARG}"
+           fi;;
         n) name=${OPTARG};;
         v) value=${OPTARG};             
 	   writeUVAR $name $value;;
@@ -102,14 +122,27 @@ do
 	l) list;;
    d) delUVAR ${OPTARG};;
 	o) print="1";;
-	e) echo "Err: -e Not Implemented Yet!";;
+	e) envnam=$OPTARG
+      value=`printenv ${envnam}`
+      echo "[[[$envnam = $value]]]]"   
+      if [[ -z "$value" ]]; then
+         echo  "Environment variable not set: $OPTARG."
+         exit 1
+      else
+         writeUVAR $envnam $value
+      fi      
+   ;;
 	:) echo "Invalid option: $OPTARG, requires an argument.";;
 	\?) help;;
     esac
 done
 shift $((OPTIND -1));
+
+#20211102 Disabled following stdin pipe checking before, as it rises access errors in cron jobs.
+[[ -z $value && ! -t 0 ]] && value=$(</dev/stdin)
+#
 if [ -n "$value" ]; then
-echo -e "$value" > $HOME/.config/.uvar_$name;
+echo -e "$value" > $STORE/.uvar_$name;
 [[ "$print" -eq "1" ]] && echo "$value"
 exit;
 fi
@@ -118,12 +151,10 @@ if [ $# -eq 1 ]; then
  exit;
 fi
 if [ $# -eq 2 ]; then
- name=$1; 
- value=$2;
- writeUVAR;
+  writeUVAR $1 $2
  exit;
 fi
 if [ -n $name ]; then
-   readUVAR $name;
+   readUVAR $name
 fi
 exit;
