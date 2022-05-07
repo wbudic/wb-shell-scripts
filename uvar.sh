@@ -53,21 +53,25 @@ a  dying Eating eggs increases just of risk study. three week young,
 EOF
 exit;
 }
+#20211102 Disabled following stdin pipe checking [[ ! -t 0]]]  before, 
+#	  as it rises access errors in cron jobs.
+[[ -z $CRON_DISABLED_STDIN ]] &&  [[ ! -t 0 ]] && value=$(</dev/stdin) 
+
 function readUVAR(){
-val=$STORE/.uvar_$1;
-if [ -f $val ]; then
-   val=$(<$val);
-   echo -e "$val";
+var=$STORE/.uvar_$1;
+if [ -f $var ]; then
+   var=$(<$var);
+   echo -e "$var";
 fi
 exit;
 }
 function writeUVAR(){ 
 [[ -z "$print" ]] && echo -e "$1=$2"
-echo -e "$value" > $STORE/.uvar_$1
-if (( $(grep -c . <<<"$value") < 2 )); then
+echo -e "$2" > $STORE/.uvar_$1
+if (( $(grep -c . <<<"$2") < 2 )); then
    export $1="$2";
 fi
-[[ "$print" -eq "1" ]] && echo "$value"
+[[ "$print" -eq "1" ]] && echo "$2"
 exit;
 }
 function list(){
@@ -80,7 +84,6 @@ if [[ -f $file ]]; then
    echo -e "$n=$v" 
 fi
 done
-exit;
 }
 function delUVAR(){
    val=$STORE/.uvar_$1;
@@ -116,8 +119,7 @@ do
                echo -e "Err: Invalid store location: ${OPTARG}"
            fi;;
         n) name=${OPTARG};;
-        v) value=${OPTARG};             
-	   writeUVAR $name $value;;
+        v) value=${OPTARG};;
 	r) readUVAR ${OPTARG};;
 	l) list;;
    d) delUVAR ${OPTARG};;
@@ -126,7 +128,7 @@ do
       value=`printenv ${envnam}`
       echo "[[[$envnam = $value]]]]"   
       if [[ -z "$value" ]]; then
-         echo  "Environment variable not set: $OPTARG."
+         echo  "Environment variable is not set: $OPTARG."
          exit 1
       else
          writeUVAR $envnam $value
@@ -136,25 +138,10 @@ do
 	\?) help;;
     esac
 done
-shift $((OPTIND -1));
 
-#20211102 Disabled following stdin pipe checking before, as it rises access errors in cron jobs.
-[[ -z $value && ! -t 0 ]] && value=$(</dev/stdin)
-#
-if [ -n "$value" ]; then
-echo -e "$value" > $STORE/.uvar_$name;
-[[ "$print" -eq "1" ]] && echo "$value"
-exit;
-fi
-if [ $# -eq 1 ]; then
- readUVAR $1; 
- exit;
-fi
-if [ $# -eq 2 ]; then
-  writeUVAR $1 $2
- exit;
-fi
-if [ -n $name ]; then
-   readUVAR $name
-fi
+[[ -n $value ]] && [[ -n name ]] && writeUVAR $name $value
+# So fall through, when no options issued or have been shifted out: 
+[[ -n $name ]] && readUVAR  $name
+[[ $# -eq 1 ]] && readUVAR  $1; 
+[[ $# -eq 2 ]] && writeUVAR $1 $2
 exit;
