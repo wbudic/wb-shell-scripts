@@ -20,6 +20,7 @@ Making them gloabal named values to sessions, between logins and subsequent bash
 -s - Alternative store location (not recommended option to use).
      Default store location is ~/.config. 
      Setting it to $0 -s /var/tmp will store to temporary storage that is volatile memory.
+-f - Copy file into an named uvar. i.e. uvar -n MY_FILE -f some_sile.ext.
 
 Usage: $0 {-o,-l} -n {name} -v {value} -r {name} {value}
 $0 {name}
@@ -80,7 +81,8 @@ do
 #echo $file
 n=$(echo $file | sed "s/$EXP//")
 if [[ -f $file ]]; then
-   v=$(<$file)
+   v=$(awk '{if(NR < 6) print}
+   END{if(NR > 5)print "---> THE VALUE DISPLAY OFF HAS BEEN CUT AT LINE 5 FOR ["  ARGV[1]  "] <---\n\n"}' $file) 
    echo -e "$n=$v" 
 fi
 done
@@ -103,7 +105,7 @@ argc=$#
 argv=("$@")
 print=0
 
-while getopts ":e:d:r:n:v:s:lo" opt
+while getopts ":e:d:r:n:v:s:f:lo" opt
 do
     case "${opt}" in
         s) if [[ -d "${OPTARG}" ]]; then                
@@ -122,6 +124,11 @@ do
         v) value=${OPTARG};;
 	r) readUVAR ${OPTARG};;
 	l) list;;
+      f) [[ -f $STORE/.uvar_$name ]] && $(rm -f $STORE/.uvar_$name);
+      while read line; do 
+      echo -e "$line" >> $STORE/.uvar_$name 
+      done <${OPTARG}       
+      exit;;
    d) delUVAR ${OPTARG};;
 	o) print="1";;
 	e) envnam=$OPTARG
