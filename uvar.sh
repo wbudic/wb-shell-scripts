@@ -152,4 +152,8 @@ done
 [[ -n $name ]] && readUVAR  $name
 [[ $# -eq 1 ]] && readUVAR  $1; 
 [[ $# -eq 2 ]] && writeUVAR "$@"
+if [[ $# > 1 ]]; then
+   name=$1; shift; value="$@"
+   writeUVAR $name "$value"
+fi
 exit;
