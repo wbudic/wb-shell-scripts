@@ -81,8 +81,9 @@ do
 #echo $file
 n=$(echo $file | sed "s/$EXP//")
 if [[ -f $file ]]; then
-   v=$(awk '{if(NR < 6) print}
-   END{if(NR > 5)print "---> THE VALUE DISPLAY OFF HAS BEEN CUT AT LINE 5 FOR ["  ARGV[1]  "] <---\n\n"}' $file) 
+     v=$(awk '{if (NR<6) print}END{if(NR > 5) \
+             print "---> THE VALUE DISPLAY OFF HAS BEEN CUT AT LINE 5 FOR ["  ARGV[1]  "] <---\n\n"}' \
+      $file) 
    echo -e "$n=$v" 
 fi
 done
@@ -138,7 +139,7 @@ do
          echo  "Environment variable is not set: $OPTARG."
          exit 1
       else
-         writeUVAR $envnam $value
+         writeUVAR "$envnam" "$value"
       fi      
    ;;
 	:) echo "Invalid option: $OPTARG, requires an argument.";;
@@ -146,9 +147,9 @@ do
     esac
 done
 
-[[ -n $value ]] && [[ -n name ]] && writeUVAR $name $value
+[[ -n $value ]] && [[ -n name ]] && writeUVAR "$name" "$value"
 # So fall through, when no options issued or have been shifted out: 
 [[ -n $name ]] && readUVAR  $name
 [[ $# -eq 1 ]] && readUVAR  $1; 
-[[ $# -eq 2 ]] && writeUVAR $1 $2
+[[ $# -eq 2 ]] && writeUVAR "$@"
 exit;
