@@ -151,7 +151,6 @@ done
 # So fall through, when no options issued or have been shifted out: 
 [[ -n $name ]] && readUVAR  $name
 [[ $# -eq 1 ]] && readUVAR  $1; 
-[[ $# -eq 2 ]] && writeUVAR "$@"
 if [[ $# > 1 ]]; then
    name=$1; shift; value="$@"
    writeUVAR $name "$value"
