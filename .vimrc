@@ -1,38 +1,45 @@
+scriptencoding utf-8
+set encoding=utf-8
 set laststatus=2
 set showtabline=1
 set t_Co=256
 set path+=**
 set number
+set list
+set listchars=tab:\|\\u202F,trail:\\u202F
 set wildmenu
-set background=dark
-set shellcmdflag=-ic
-set lazyredraw
-set splitright
-set mouse=a
-set paste
-set clipboard^=unnamed
-filetype plugin indent on
-
-set rtp+=~/home/will/dev/fzf/bin/fzf
+let g:airline_powerline_fonts=1
+"let g:tmuxline_preset = 'nightly_fox'
+let g:airline_theme='deus'
 set rtp+=~/.fzf
-
-call plug#begin()
-Plug '~/.fzf'
+call plug#begin()  "Use :PlugInstall when adding here new plugins.
+Plug 'fatih/vim-go'
 Plug 'junegunn/fzf.vim'
+Plug 'godlygeek/tabular'
+Plug 'preservim/vim-markdown'
 Plug 'nightsense/cosmic_latte'
-Plug 'skywind3000/asyncrun.vim'
-Plug 'skywind3000/vim-preview'
-Plug 'skywind3000/gutentags'
-Plug 'skywind3000/gutentags_plus'
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+Plug 'scrooloose/nerdtree'
+Plug 'tpope/vim-surround'
+Plug 'tpope/vim-repeat'
+Plug 'justinmk/vim-sneak'
 call plug#end()
-
+"install also pathogen
 execute pathogen#infect()
-"quick pairs
-imap <leader>' ''<ESC>i
-imap <leader>" ""<ESC>i
-imap <leader>( ()<ESC>i
-imap <leader>[ []<ESC>i
 
+filetype plugin indent on
+"syntax disable
+nnoremap <Leader>y "+
+vnoremap <C-c> "+y
+vnoremap <C-d> "+d
+inoremap <C-v> <ESC>"+pa
+" Substitute in line
+vnoremap gs "zy:s/<C-r>z//g<Left><Left>
+nnoremap gs "zyiw:s/<C-r>z//g<Left><Left>
+nnoremap <expr> <silent> 0 col('.') == match(getline('.'),'\S')+1 ? '0' : '^'
+"============== Custom Mappings ===============
+"" general mapping
 nmap <leader><Tab> :tabnext<CR>
 nmap <leader><C-S-Tab> :tabprevious<CR>
 map <C-S-Tab> :tabprevious<CR>
@@ -69,41 +76,76 @@ nnoremap <Leader>0 :10b<CR>
 "fzf stuff
 nnoremap <leader>f :Files .<CR>
 nnoremap <leader>b :Buffers<CR>
-imap <c-x><c-l> <plug>(fzf-complete-line)
-
-"[F1] Taken by vim Help.
-"[F2] Taken by fzf pluggin.
-vnoremap <F3> y:AsyncRun -mode=term -pos=left <C-R>0<BS><CR><C-W><RIGHT>
-nnoremap <F3> :AsyncRun -mode=term -pos=right ./%<CR>
-nnoremap <F4> :AsyncRun -mode=term -pos=right %
-let g:asyncrun_open = 15
-nnoremap <F5> :FZF ~<CR>  
-nnoremap <F6> :AsyncRun -mode=term -pos=bottom ~/dev/B_L_R_via_sshfs/backup.sh
-vnoremap <F6> :AsyncRun -mode=term -pos=bottom ~/dev/B_L_R_via_sshfs/backup.sh
-" vnoremap <F2> y:tabnew <Bar> r! <C-R>0<BACKSPACE><CR>
-"vnoremap <F6> y:vsplit new <Bar> setlocal buftype=nofile bufhidden=hide noswapfile <Bar> r! <C-R>0<BS><CR>
-
+map <leader>[ :qa!<CR>
+map <leader>s :w<CR>
+nnoremap <silent> <Leader><Left> :vertical resize +3<CR>
+nnoremap <silent> <Leader><Right> :vertical resize -3<CR>
+nnoremap <silent> <Leader><Up> :resize -3<CR>
+nnoremap <silent> <Leader><Down> :resize +3<CR>
 " Set buffer hidden (non recording)
 nnoremap <Leader>h :set hidden<CR>
 nnoremap <Leader>H :set confirm<CR>
-" Open tag in vertical edit split. For buffers switch default is <C-c>]
-nnoremap <leader>] :vsplit<CR><C-]>
-nnoremap <leader>[ :q<CR>
+"Moving lines up|down
+nnoremap <c-j> :m .+1<CR>==
+nnoremap <c-l> :m .-2<CR>==
+inoremap <c-j> <Esc>:m .+1<CR>==gi
+inoremap <c-l> <Esc>:m .-2<CR>==gi
+vnoremap <c-j> :m '>+1<CR>gv=gv
+vnoremap <c-l> :m '<-2<CR>gv=gv
+
+noremap <leader>n :set relativenumber!<CR>
+
+"Map to special slavic latin characters.
+nnoremap <leader>z a[ŽžŠšĆćČč]<esc>hhh
+nnoremap <leader>x dbXldvw<CR>
+inoremap <leader>z <C-O>a[ŽžŠšĆćČč]<esc>hhhi
+inoremap <leader>x <C-O>db<C-O>X<C-O>l<C-O>dvw
+
 " It's useful to show the buffer number in the status line.
 set laststatus=2 statusline=%02n:%<%f\ %h%m%r%=%-14.(%l,%c%V%)\ %P
+set cul
 "run into scratch buffer with :R cmd or use :read cmd to insert.
 command! -nargs=* -complete=shellcmd R new | setlocal buftype=nofile bufhidden=hide noswapfile | r !<args>
-vnoremap <C-c> "+y
-vnoremap <C-d> "+d
-inoremap <C-v> <ESC>"+pa
-xnoremap <leader>y "+r
-xnoremap <leader>p "+p
-nnoremap <leader>yf <cmd>let @+=expand('%')<cr>
+set mouse=a
+"literal pasting mode, this disables insert mode mappings. if set.
+"set paste
+"run bash command
+"map <F5> yyp!!sh<CR><Esc>
+"Execute selection and display in new tab
+vnoremap <F2> y:tabnew <Bar> r! <C-R>0<BACKSPACE><CR>
+set splitright
+vnoremap <F3> y:vsplit new <Bar> setlocal buftype=nofile bufhidden=hide noswapfile <Bar> r! <C-R>0<BACKSPACE><CR>
+"Following needed to get .bashrc loaded
+set shellcmdflag=-ic
 
-autocmd FileType perl set makeprg=/usr/bin/perl\ -c\ %\ $*
-autocmd FileType perl set errorformat=%f:%l:%m
-autocmd FileType perl set autowrite
-autocmd BufWritePost *.pl,*.pm,*.t :make 
+function! CursorLineNrOn() abort
+  if &number || &relativenumber
+    hi CursorLineNr ctermfg=white ctermbg=black guifg=red guibg=black cterm=underline
+  endif
+  return ''
+endfunction
 
+function! CursorLineNrOff() abort
+  if &number || &relativenumber
+    "hi CursorLineNr ctermbg=dark"ctermfg=blue ctermbg=black guifg=blue guibg=black
+    hi clear CursorLineNr
+    hi CursorLineNr cterm=underline"color cosmic_latte 
+  endif
+  return ''
+endfunction
+
+autocmd ModeChanged *:[vV\x16]* call CursorLineNrOn()
+autocmd ModeChanged [vV\x16]*:* call CursorLineNrOff()
+augroup AutoHighlighting
+    au!
+    autocmd CmdlineEnter /,\? set hlsearch
+    autocmd CmdlineLeave /,\? set nohlsearch
+augroup EN
+set guicursor=i:ver25-iCursor
+set background=dark
 colorscheme cosmic_latte
-map <C-S> :w<CR>
+set grepprg=rg\ --vimgrep\ --smart-case\ --follow
+
+silent! call repeat#set("\<Plug>MyWonderfulMap", v:count)
+
+"This file originates from https://github.com/wbudic/wb-shell-scripts
