@@ -8,7 +8,8 @@ export USER=will
 
 echo -e $(date +"%d-%b-%Y %T") $(basename $0) "Started"
 
-rsync -chavzP --stats will@nuc:thttpd_dev/dbLifeLog/  /home/will/backups/NUC_dbLifeLog
+rsync -chavzP --stats will@nuc:thttpd_dev/dbLifeLog/  "$HOME/backups/NUC_dbLifeLog"
+rm -f "$HOME/backups/NUC_dbLifeLog/cgisess_*"
 
 echo -e $(date +"%d-%b-%Y %T") $(basename $0) "Ended\n"
 
